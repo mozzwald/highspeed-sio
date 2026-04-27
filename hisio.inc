@@ -33,7 +33,6 @@
 ; re-using original SIO ZP locations $38 - $3C for my own code
 	CRETRY = $38	; command frame retries
 	DRETRY = $39	; data frame retries
-	HINDEX = $3C	; highspeed speed table index, 1-based
 
 ; default number of command frame retries
 .if .def SIO2BT

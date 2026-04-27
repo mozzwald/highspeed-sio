@@ -54,6 +54,8 @@ DEVICETB = RAMBUF+5	; 4-byte table for last accessed devices
 
 .if .def SIO2BT
 NEXTSPEEDSLOT = HIBUF+4
+.else
+HINDEX = HIBUF+4	; highspeed speed table index, 1-based
 .endif
 
 ; address of reset handler
@@ -61,7 +63,7 @@ NEXTSPEEDSLOT = HIBUF+4
     .if .def SIO2BT
       RESETAD = NEXTSPEEDSLOT+1
     .else
-      RESETAD = HIBUF+4	; after end of highspeed SIO data
+      RESETAD = HINDEX+1	; after end of highspeed SIO data
     .endif
 .else
   RESETAD = $0108	; (almost) at beginning of page 1

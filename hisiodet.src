@@ -39,7 +39,11 @@ HISIO
 	RTS
 .endif
 
+.if .def HIPATCH
 ?DOSIO	LDX HINDEX
+.else
+?DOSIO	LDX DUNIT
+.endif
 ?ABS02	LDA SPEEDTB-1,X
 	BEQ ?DOCHK
 
@@ -130,7 +134,11 @@ DOHIENTRY
 ?ABS18	LDA SIOSPEED
 .endif
 
+.if .def HIPATCH
 ?SETSP2	LDX HINDEX
+.else
+?SETSP2	LDX DUNIT
+.endif
 	CLC		; add 1 to value to prevent endless loop
 	ADC #1		; if device sends a speed byte of 0
 ?ABS19	STA SPEEDTB-1,X
