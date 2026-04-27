@@ -30,10 +30,10 @@ COMS =	hisio.com hisiok.com \
 	dumpos.com 
 
 hipatch-code.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
-	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dPATCHKEY=1 -r -o$@ hipatch-code.src
+	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dPATCHKEY=1 -dMAXDRIVENO=17 -r -o$@ hipatch-code.src
 
 hipatch-code-rom.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
-	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dROMABLE=1 -dPATCHKEY=1 -r -o$@ hipatch-code.src
+	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dROMABLE=1 -dPATCHKEY=1 -dMAXDRIVENO=17 -r -o$@ hipatch-code.src
 
 hipatch-code-rom-sio2bt.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
 	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dROMABLE=1 -dSIO2BT=1 -r -o$@ hipatch-code.src

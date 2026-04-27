@@ -39,7 +39,7 @@ HISIO
 	RTS
 .endif
 
-?DOSIO	LDX DUNIT
+?DOSIO	LDX HINDEX
 ?ABS02	LDA SPEEDTB-1,X
 	BEQ ?DOCHK
 
@@ -130,7 +130,7 @@ DOHIENTRY
 ?ABS18	LDA SIOSPEED
 .endif
 
-?SETSP2	LDX DUNIT
+?SETSP2	LDX HINDEX
 	CLC		; add 1 to value to prevent endless loop
 	ADC #1		; if device sends a speed byte of 0
 ?ABS19	STA SPEEDTB-1,X

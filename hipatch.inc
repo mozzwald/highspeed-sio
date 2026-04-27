@@ -27,20 +27,29 @@ HIPATCH = 1
 .endif
 
 SIOSPEED = RAMBUF	; speed byte for current operation
-SPEEDTB	= RAMBUF+1	; 8-byte table for drive speeds
+SPEEDTB	= RAMBUF+1	; table for cached device speeds
 
 .if .def SIO2BT
 SPEEDTBSIZE = 4     ; SPEEDTB size, table for device speeds has only 4-bytes (when SIO2BT defined)!
+.else
+.if .def MAXDRIVENO
+SPEEDTBSIZE = MAXDRIVENO
+.else
+SPEEDTBSIZE = 8
+.endif
+.endif
+
+.if .def SIO2BT
 BT576K = $08        ; HS Index for 57.600 Baud
 DEVICETB = RAMBUF+5	; 4-byte table for last accessed devices
 .endif
 
 .if .def PATCHKEY
   ; add a config byte to enable/disable highspeed SIO with keyboard
-  HIENAB = RAMBUF+9
-  HIBUF = RAMBUF+10	; .. RAMBUF+13 (4 bytes for get status)
+  HIENAB = SPEEDTB+SPEEDTBSIZE
+  HIBUF = HIENAB+1	; 4 bytes for get status / highspeed query buffer
 .else
-  HIBUF = RAMBUF+9	; .. RAMBUF+12
+  HIBUF = SPEEDTB+SPEEDTBSIZE	; 4 bytes for get status / highspeed query buffer
 .endif
 
 .if .def SIO2BT

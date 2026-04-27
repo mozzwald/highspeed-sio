@@ -33,6 +33,7 @@
 ; re-using original SIO ZP locations $38 - $3C for my own code
 	CRETRY = $38	; command frame retries
 	DRETRY = $39	; data frame retries
+	HINDEX = $3C	; highspeed speed table index, 1-based
 
 ; default number of command frame retries
 .if .def SIO2BT
@@ -50,7 +51,7 @@
 	MYSPEED = $3A
 
 ; timer in ZP, used by fast VBI code
-	MYTIM1 = $3B ; $3C
+	MYTIM1 = $3B
 
 	STACKP = $318
 ;	STACKP = $3B
