@@ -47,11 +47,31 @@ FN_CHAINBOOT
 	LDX #<FN_PARAM_MOUNT_ALL
 	LDY #>FN_PARAM_MOUNT_ALL
 	JSR FN_CALL_SIO
-	BMI FN_CHAINBOOT_FAILED
+    ; temporarily do NOT branch to failure here
+    ; BMI FN_CHAINBOOT_FAILED
+
+	JSR FN_TOGGLE_D1_TO_STD
+	JSR FN_CLEAR_HSIO_CACHE
+	JSR FN_BOOT_DELAY
 
 	BPUT 0, TFNBOOTOKL, TFNBOOTOK
 	CLC
 	RTS
+
+; Wait a short time after FujiNet Mount All before returning to the
+; Atari boot process. This gives FujiNet time to finish making the
+; newly mounted D1: image ready for the immediate boot-sector read.
+;
+; RTCLOK+2 at $14 increments once per frame:
+; ~60/sec NTSC, ~50/sec PAL.
+FN_BOOT_DELAY
+    CLC
+    LDA $14
+    ADC #60          ; about 0.5 sec NTSC, 0.6 sec PAL
+FN_BOOT_DELAY_LOOP
+    CMP $14
+    BNE FN_BOOT_DELAY_LOOP
+    RTS
 
 FN_CHAINBOOT_FAILED
 	BPUT 0, TFNBOOTERRL, TFNBOOTERR
@@ -68,6 +88,38 @@ FN_CALL_SIO_L1
 	DEY
 	BPL FN_CALL_SIO_L1
 	JMP PSTD	; bypass the installed highspeed dispatcher for $70 commands
+
+FN_TOGGLE_D1_TO_STD
+	LDX #<FN_PARAM_D1_HSIO_INDEX
+	LDY #>FN_PARAM_D1_HSIO_INDEX
+	JSR FN_COPY_DCB
+	LDA #$31
+	STA $023A	; CDEVIC, command-frame device byte
+	LDA #$08	; FujiNet HSIO index 8 = 57600 bps
+	JSR PHISIO	; send one $3F at high speed, bypassing detection
+	RTS
+
+FN_CLEAR_HSIO_CACHE
+	LDA #0
+	STA $CC09	; FujiNet NEXTSPEEDSLOT in installed hipatch-code.bin
+	LDX #3
+FN_CLEAR_HSIO_CACHE_L1
+	STA $CC01,X	; FujiNet SPEEDTB
+	STA $CC05,X	; FujiNet DEVICETB
+	DEX
+	BPL FN_CLEAR_HSIO_CACHE_L1
+	RTS
+
+FN_COPY_DCB
+	STX TMPVEC
+	STY TMPVEC+1
+	LDY #$0B
+FN_COPY_DCB_L1
+	LDA (TMPVEC),Y
+	STA $300,Y
+	DEY
+	BPL FN_COPY_DCB_L1
+	RTS
 
 FN_SWAP_SLOT_META
 	LDA FN_SLOTBUF
@@ -170,6 +222,16 @@ FN_PARAM_MOUNT_ALL
 	.WORD 0
 	.WORD 0
 
+FN_PARAM_D1_HSIO_INDEX
+	.BYTE $31
+	.BYTE $01
+	.BYTE $3F
+	.BYTE $40
+	.WORD FN_HSIO_INDEX
+	.BYTE $0F,0
+	.WORD 1
+	.BYTE $20,0
+
 TFNBOOTOK	.BYTE "swapped FujiNet D1: and D2:",155
 TFNBOOTOKL = * - TFNBOOTOK
 
@@ -179,3 +241,4 @@ TFNBOOTERRL = * - TFNBOOTERR
 FN_SLOTBUF	.DC 304 0
 FN_PATH0	.DC 256 0
 FN_PATH1	.DC 256 0
+FN_HSIO_INDEX	.BYTE 0

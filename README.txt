@@ -59,15 +59,21 @@ command and if it succeeds will immediately continue the boot process.
 This allows for easy "chain-booting" the highspeed SIO patch by loading
 hisioboot-atarisio.atr in D1: and the ATR file to boot in D2:.
 
-The experimental hisioboot-fujinet.atr target follows the same boot
-flow for FujiNet. Boot hisioboot-fujinet.atr from FujiNet D1: and keep
-the target ATR mounted in FujiNet D2:. After installing the highspeed
-SIO patch it reads the FujiNet device slot table with device $70
-command $F2, swaps the D1:/D2: slot records, writes the table back with
-command $F1, sends Mount All command $D7, cleans the loader memory, and
+The experimental hisioboot-fujinet.atr target is a FujiNet-specific
+chain-boot prototype. Boot hisioboot-fujinet.atr from FujiNet D1: and
+keep the target ATR mounted in FujiNet D2:. After installing the
+highspeed SIO patch it reads the FujiNet device slot table with device
+$70 command $F2, reads the full D1:/D2: paths with command $DA, swaps
+the D1:/D2: host/mode records, writes the table back with command $F1,
+writes the swapped full paths with command $E2, and sends Mount All
+command $D7. It then sends one D1: highspeed-index command ($31/$3F) to
+force FujiNet's disk baud toggle back to standard speed, clears the
+installed highspeed SIO speed cache, cleans the loader memory, and
 returns from the boot initializer so the Atari continues booting from
-the new D1:. This is a prototype D1:/D2: swap model; it does not use a
-warmstart or coldstart as the primary boot path.
+the new D1:. The normal boot path should then issue its own $3F probe
+and switch FujiNet back to high speed before reading the target disk.
+This is still an experimental/prototype D1:/D2: swap model; it does not
+use a warmstart or coldstart as the primary boot path.
 
 The files "HISIO*.COM" and "DUMPOS.COM" can be found in the ZIP as
 separate files and also in the included "hipatch.atr".
@@ -626,4 +632,3 @@ refresh cycle was actually 135 cycles long.
 Fortunately, the worst case critical path of the highspeed SIO code
 is only 133 cycles, this was nothing I had to worry about, but
 investigating this was a lot of fun :-)
-
