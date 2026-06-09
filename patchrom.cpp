@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 	bool need_csum_update;
 	bool force_csum_update = false;
 
-	bool patch_keyirq = true;
+	bool patch_keyirq = false;
 	bool patch_powerup = true;
 	bool sio2bt = false;
 

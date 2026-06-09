@@ -3,7 +3,7 @@
 all: hipatch.atr patchrom patchrom.exe \
  diag-read.atr diag-ext-read.atr diag-hias-read.atr \
  diag-write.atr diag-ext-write.atr diag-hias-write.atr \
- hisioboot.atr hisioboot-atarisio.atr
+ hisioboot.atr hisioboot-atarisio.atr hisioboot-fujinet.atr
 
 ATASM ?= atasm
 ATASMFLAGS ?=
@@ -30,31 +30,34 @@ COMS =	hisio.com hisiok.com \
 	dumpos.com 
 
 hipatch-code.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
-	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dFASTVBI_NOCLOCK=1 -dPATCHKEY=1 -dMAXDRIVENO=17 -r -o$@ hipatch-code.src
+	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dFASTVBI_NOCLOCK=1 -dFUJINET=1 -r -o$@ hipatch-code.src
 
 hipatch-code-rom.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
-	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dFASTVBI_NOCLOCK=1 -dROMABLE=1 -dPATCHKEY=1 -dMAXDRIVENO=17 -r -o$@ hipatch-code.src
+	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dFASTVBI_NOCLOCK=1 -dROMABLE=1 -dFUJINET=1 -r -o$@ hipatch-code.src
 
 hipatch-code-rom-sio2bt.bin: hipatch-code.src hipatch.inc $(HISIOSRC)
 	$(ATASM) $(ATASMFLAGS) -f0 -dFASTVBI=1 -dROMABLE=1 -dSIO2BT=1 -r -o$@ hipatch-code.src
 
 hisio.com: hipatch.src hipatch-code.bin hipatch.inc cio.inc
-	$(ATASM) $(ATASMFLAGS) -dPATCHKEY=1 -o$@ $<
+	$(ATASM) $(ATASMFLAGS) -o$@ $<
 
 hisiok.com: hipatch.src hipatch-code.bin hipatch.inc cio.inc
 	$(ATASM) $(ATASMFLAGS) -o$@ $<
 
 hisior.com: hipatch.src hipatch-code-rom.bin hipatch.inc cio.inc
-	$(ATASM) $(ATASMFLAGS) -dROMABLE=1 -dPATCHKEY=1 -o$@ $<
+	$(ATASM) $(ATASMFLAGS) -dROMABLE=1 -o$@ $<
 
 hisiork.com: hipatch.src hipatch-code-rom.bin hipatch.inc cio.inc
 	$(ATASM) $(ATASMFLAGS) -dROMABLE=1 -o$@ $<
 
 hisioboot.atr: hipatch.src hipatch-code.bin hipatch.inc cio.inc
-	$(ATASM) $(ATASMFLAGS) -dPATCHKEY=1 -dATRBOOT=1 -r -o$@ $<
+	$(ATASM) $(ATASMFLAGS) -dATRBOOT=1 -r -o$@ $<
 
 hisioboot-atarisio.atr: hipatch.src hipatch-code.bin hipatch.inc cio.inc atarisio.src
-	$(ATASM) $(ATASMFLAGS) -dPATCHKEY=1 -dATRBOOT=1 -dATARISIO_SWAP=1 -r -o$@ $<
+	$(ATASM) $(ATASMFLAGS) -dATRBOOT=1 -dATARISIO_SWAP=1 -r -o$@ $<
+
+hisioboot-fujinet.atr: hipatch.src hipatch-code.bin hipatch.inc cio.inc fujinet-chainboot.src
+	$(ATASM) $(ATASMFLAGS) -dATRBOOT=1 -dFUJINET_CHAINBOOT=1 -r -o$@ $<
 
 diag-hias-read.atr: diag.src $(HISIOSRC)
 	$(ATASM) $(ATASMFLAGS) -f0 -r -o$@ $<

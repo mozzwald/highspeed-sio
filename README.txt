@@ -59,6 +59,16 @@ command and if it succeeds will immediately continue the boot process.
 This allows for easy "chain-booting" the highspeed SIO patch by loading
 hisioboot-atarisio.atr in D1: and the ATR file to boot in D2:.
 
+The experimental hisioboot-fujinet.atr target follows the same boot
+flow for FujiNet. Boot hisioboot-fujinet.atr from FujiNet D1: and keep
+the target ATR mounted in FujiNet D2:. After installing the highspeed
+SIO patch it reads the FujiNet device slot table with device $70
+command $F2, swaps the D1:/D2: slot records, writes the table back with
+command $F1, sends Mount All command $D7, cleans the loader memory, and
+returns from the boot initializer so the Atari continues booting from
+the new D1:. This is a prototype D1:/D2: swap model; it does not use a
+warmstart or coldstart as the primary boot path.
+
 The files "HISIO*.COM" and "DUMPOS.COM" can be found in the ZIP as
 separate files and also in the included "hipatch.atr".
 
@@ -616,5 +626,4 @@ refresh cycle was actually 135 cycles long.
 Fortunately, the worst case critical path of the highspeed SIO code
 is only 133 cycles, this was nothing I had to worry about, but
 investigating this was a lot of fun :-)
-
 

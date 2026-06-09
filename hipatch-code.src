@@ -64,39 +64,40 @@ STDSIO	= PSTD
 	.include "hisiodet-sio2bt.src"
 .else
 
-; Supported highspeed-device cache indexes:
-;   1..8   = disk D1:..D8: via DDEVIC=$31, DUNIT=1..8
-;   9..17  = FujiNet effective SIO IDs $70..$78
-;
-; Atari OS SIO computes the effective command-frame device ID as:
-;   CDEVIC = DDEVIC + DUNIT - 1
-;
-; This supports both common forms for FujiNet calls:
-;   DDEVIC=$70, DUNIT=1..9   -> CDEVIC=$70..$78
-;   DDEVIC=$70..$78, DUNIT=1 -> CDEVIC=$70..$78
+.if .def FUJINET
+; Supported effective SIO IDs for highspeed probing:
+;   $31..$38 = disk D1:..D8:
+;   $70..$78 = FujiNet config/network devices
 	LDA DDEVIC
-	CMP #$31
-	BEQ ?CHKDSK
-
-; FujiNet device IDs $70..$78: compute CDEVIC-$70.
 	CLC
 	ADC DUNIT
-	SEC
-	SBC #$71
+	ADC #$FF
+	STA CDEVIC
+	CMP #$31
 	BCC STDSIO
-	CMP #9
+	CMP #$39
+	BCC ?DOHIDET
+	CMP #$70
+	BCC STDSIO
+	CMP #$79
 	BCS STDSIO
-	CLC
-	ADC #9
-	STA HINDEX
-	BNE ?DOHIDET
+	BCC ?DOHIDET
 
+.else
+	LDA DDEVIC
+	CMP #$31
+	BNE STDSIO
 ?CHKDSK
 	LDA DUNIT
 	BEQ STDSIO
+.if .def MAXDRIVENO
+	CMP #MAXDRIVENO+1
+.else
 	CMP #9
+.endif
 	BCS STDSIO
 	STA HINDEX
+.endif
 
 ?DOHIDET
 
@@ -118,10 +119,14 @@ PKEY1	PHA
 	TXA
 	PHA
 	LDA #0
+.if .def FUJINET
+	LDX #9
+.else
 .if .def MAXDRIVENO
 	LDX #MAXDRIVENO-1
 .else
 	LDX #7
+.endif
 .endif
 PKEY2	STA SPEEDTB,X	; clear drive speed table
 	DEX
@@ -155,4 +160,3 @@ PKEYX	PLA
 .else
 	.BYTE "230525"
 .endif
-

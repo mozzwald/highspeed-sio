@@ -32,10 +32,14 @@ SPEEDTB	= RAMBUF+1	; table for cached device speeds
 .if .def SIO2BT
 SPEEDTBSIZE = 4     ; SPEEDTB size, table for device speeds has only 4-bytes (when SIO2BT defined)!
 .else
+.if .def FUJINET
+SPEEDTBSIZE = 4     ; 4-entry rotating cache for disk/FujiNet highspeed devices
+.else
 .if .def MAXDRIVENO
 SPEEDTBSIZE = MAXDRIVENO
 .else
 SPEEDTBSIZE = 8
+.endif
 .endif
 .endif
 
@@ -44,18 +48,33 @@ BT576K = $08        ; HS Index for 57.600 Baud
 DEVICETB = RAMBUF+5	; 4-byte table for last accessed devices
 .endif
 
+.if .def FUJINET
+DEVICETB = SPEEDTB+SPEEDTBSIZE	; table for cached effective SIO device IDs
+NEXTSPEEDSLOT = DEVICETB+SPEEDTBSIZE
+.endif
+
 .if .def PATCHKEY
   ; add a config byte to enable/disable highspeed SIO with keyboard
+.if .def FUJINET
+  HIENAB = NEXTSPEEDSLOT+1
+.else
   HIENAB = SPEEDTB+SPEEDTBSIZE
+.endif
   HIBUF = HIENAB+1	; 4 bytes for get status / highspeed query buffer
 .else
+.if .def FUJINET
+  HIBUF = NEXTSPEEDSLOT+1	; 4 bytes for get status / highspeed query buffer
+.else
   HIBUF = SPEEDTB+SPEEDTBSIZE	; 4 bytes for get status / highspeed query buffer
+.endif
 .endif
 
 .if .def SIO2BT
 NEXTSPEEDSLOT = HIBUF+4
 .else
+.if .not .def FUJINET
 HINDEX = HIBUF+4	; highspeed speed table index, 1-based
+.endif
 .endif
 
 ; address of reset handler
@@ -63,7 +82,7 @@ HINDEX = HIBUF+4	; highspeed speed table index, 1-based
     .if .def SIO2BT
       RESETAD = NEXTSPEEDSLOT+1
     .else
-      RESETAD = HINDEX+1	; after end of highspeed SIO data
+      RESETAD = HIBUF+4	; after end of highspeed SIO data
     .endif
 .else
   RESETAD = $0108	; (almost) at beginning of page 1

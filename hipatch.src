@@ -230,6 +230,9 @@ WARNING	.BYTE 0
 .if .def ATARISIO_SWAP
 	.include "atarisio.src"
 .endif
+.if .def FUJINET_CHAINBOOT
+	.include "fujinet-chainboot.src"
+.endif
 
 ; reset routine: 
 RESET	LDA $D20F
@@ -246,6 +249,10 @@ EXIT
 .if .def ATRBOOT
 .if .def ATARISIO_SWAP
 	JSR SWAP_DRIVES
+	BCC EXITX
+.endif
+.if .def FUJINET_CHAINBOOT
+	JSR FN_CHAINBOOT
 	BCC EXITX
 .endif
 	BPUT 0, TBOOTL, TBOOT
